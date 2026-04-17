@@ -1,0 +1,12 @@
+---
+pre-commit:
+  commands:
+    yamllint:
+      glob: "*.{yml,yaml}"
+      run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} yamllint {staged_files}
+
+pre-push:
+  commands:
+    yamllint:
+      glob: "*.{yml,yaml}"
+      run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} yamllint {push_files}
