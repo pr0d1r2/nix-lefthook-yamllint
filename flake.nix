@@ -72,6 +72,7 @@
           default = pkgs.mkShell {
             packages = [
               self.packages.${pkgs.stdenv.hostPlatform.system}.default
+              pkgs.yamllint
               nix-lefthook-nixfmt.packages.${pkgs.stdenv.hostPlatform.system}.default
               nix-lefthook-shellcheck.packages.${pkgs.stdenv.hostPlatform.system}.default
               nix-lefthook-shfmt.packages.${pkgs.stdenv.hostPlatform.system}.default
