@@ -99,12 +99,6 @@ pre-push:
 
 ## §B — Bugs / Known Issues
 
-1. **`.envrc` missing `watch_file` directives** — The `.envrc` contains only `use flake` but does not watch `flake.nix`, `flake.lock`, or `dev.sh` for changes. Per the project's own direnv skill, it should watch these files so direnv reloads automatically when they change.
+1. **No linter configured for Markdown files** — `.md` files are tracked in git (README.md, CLAUDE.md, agent skills) but have no lefthook check, violating the linter skill which requires every tracked file type to have an assigned linter.
 
-2. **No linter configured for Markdown files** — `.md` files are tracked in git (README.md, CLAUDE.md, agent skills) but have no lefthook check, violating the linter skill which requires every tracked file type to have an assigned linter.
-
-3. **Local `lefthook.yml` uses bare `yamllint` while remote uses `lefthook-yamllint`** — The local config at line 76 runs `yamllint {staged_files}` directly rather than through the `lefthook-yamllint` wrapper. This means the local check doesn't exercise the wrapper's file-filtering logic (skipping non-existent/non-yaml files), creating a behavioral divergence between local development and remote consumers.
-
-4. **No timeout test coverage** — The timeout behavior (`LEFTHOOK_YAMLLINT_TIMEOUT`) is specified in the remote config and documented in the README, but there are no tests verifying it works correctly or that the default of 30s applies.
-
-5. **File size limit for `.sh` files not declared** — `config/lefthook/file_size_limits.yml` lists `.lock`, `.nix`, `.bats`, and `.yml` but not `.sh`, despite shell scripts being a primary file type in the project.
+2. **No timeout test coverage** — The timeout behavior (`LEFTHOOK_YAMLLINT_TIMEOUT`) is specified in the remote config and documented in the README, but there are no tests verifying it works correctly or that the default of 30s applies.
