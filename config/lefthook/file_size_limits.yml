@@ -1,3 +1,4 @@
+---
 default: 4096
 extensions:
   lock: 65536
