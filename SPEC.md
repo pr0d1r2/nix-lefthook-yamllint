@@ -89,25 +89,22 @@ pre-push:
 |--------|-----|------|
 | `.` | T1 | Add `watch_file` entries to `.envrc` for `flake.nix`, `dev.sh`, and nix modules per direnv skill |
 | `.` | T2 | Add markdownlint lefthook check for `.md` files (linter skill requires every tracked file type has a linter) |
-| `.` | T3 | Add TOML linter lefthook check for `.rtk/filters.toml` |
-| `.` | T4 | Add test for `lefthook-remote.yml` content/structure validation |
-| `.` | T5 | Add integration test verifying timeout behavior via `LEFTHOOK_YAMLLINT_TIMEOUT` |
-| `.` | T6 | Add `flake.lock` to `.envrc` watch list for automatic reload on lock updates |
-| `.` | T7 | Add symlink/special-file edge case tests to `lefthook-yamllint.bats` |
-| `.` | T8 | Pin `nix-lefthook-ci-action` to a tagged release instead of a commit SHA |
-| `.` | T9 | Add `nix flake check` as a bats test or verify it runs in CI |
-| `.` | T10 | Document the `nix-dev-shell-agentic` dependency and what `mkShells` provides |
+| `.` | T3 | Add test for `lefthook-remote.yml` content/structure validation |
+| `.` | T4 | Add integration test verifying timeout behavior via `LEFTHOOK_YAMLLINT_TIMEOUT` |
+| `.` | T5 | Add `flake.lock` to `.envrc` watch list for automatic reload on lock updates |
+| `.` | T6 | Add symlink/special-file edge case tests to `lefthook-yamllint.bats` |
+| `.` | T7 | Pin `nix-lefthook-ci-action` to a tagged release instead of a commit SHA |
+| `.` | T8 | Add `nix flake check` as a bats test or verify it runs in CI |
+| `.` | T9 | Document the `nix-dev-shell-agentic` dependency and what `mkShells` provides |
 
 ## §B — Bugs / Known Issues
 
 1. **`.envrc` missing `watch_file` directives** — The `.envrc` contains only `use flake` but does not watch `flake.nix`, `flake.lock`, or `dev.sh` for changes. Per the project's own direnv skill, it should watch these files so direnv reloads automatically when they change.
 
-2. **No linter configured for Markdown files** — `.md` files are tracked in git (README.md, CLAUDE.md, PROMPT.md, agent skills) but have no lefthook check, violating the linter skill which requires every tracked file type to have an assigned linter.
+2. **No linter configured for Markdown files** — `.md` files are tracked in git (README.md, CLAUDE.md, agent skills) but have no lefthook check, violating the linter skill which requires every tracked file type to have an assigned linter.
 
-3. **No linter configured for TOML files** — `.rtk/filters.toml` is tracked but has no linter in lefthook.
+3. **Local `lefthook.yml` uses bare `yamllint` while remote uses `lefthook-yamllint`** — The local config at line 76 runs `yamllint {staged_files}` directly rather than through the `lefthook-yamllint` wrapper. This means the local check doesn't exercise the wrapper's file-filtering logic (skipping non-existent/non-yaml files), creating a behavioral divergence between local development and remote consumers.
 
-4. **Local `lefthook.yml` uses bare `yamllint` while remote uses `lefthook-yamllint`** — The local config at line 76 runs `yamllint {staged_files}` directly rather than through the `lefthook-yamllint` wrapper. This means the local check doesn't exercise the wrapper's file-filtering logic (skipping non-existent/non-yaml files), creating a behavioral divergence between local development and remote consumers.
+4. **No timeout test coverage** — The timeout behavior (`LEFTHOOK_YAMLLINT_TIMEOUT`) is specified in the remote config and documented in the README, but there are no tests verifying it works correctly or that the default of 30s applies.
 
-5. **No timeout test coverage** — The timeout behavior (`LEFTHOOK_YAMLLINT_TIMEOUT`) is specified in the remote config and documented in the README, but there are no tests verifying it works correctly or that the default of 30s applies.
-
-6. **File size limit for `.sh` files not declared** — `config/lefthook/file_size_limits.yml` lists `.lock`, `.nix`, `.bats`, and `.yml` but not `.sh`, despite shell scripts being a primary file type in the project.
+5. **File size limit for `.sh` files not declared** — `config/lefthook/file_size_limits.yml` lists `.lock`, `.nix`, `.bats`, and `.yml` but not `.sh`, despite shell scripts being a primary file type in the project.
