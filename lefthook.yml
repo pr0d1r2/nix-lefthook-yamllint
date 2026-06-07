@@ -73,11 +73,11 @@ pre-commit:
   commands:
     yamllint:
       glob: "*.{yml,yaml}"
-      run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} yamllint {staged_files}
+      run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} lefthook-yamllint {staged_files}
 
 pre-push:
   parallel: true
   commands:
     yamllint:
       glob: "*.{yml,yaml}"
-      run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} yamllint {push_files}
+      run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} lefthook-yamllint {push_files}
