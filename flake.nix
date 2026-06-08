@@ -13,6 +13,16 @@
       url = "github:pr0d1r2/nix-dev-shell-agentic";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-lefthook-bats-unit = {
+      url = "github:pr0d1r2/nix-lefthook-bats-unit";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-dev-shell-agentic.follows = "nix-dev-shell-agentic";
+    };
+    nix-lefthook-bats-parse = {
+      url = "github:pr0d1r2/nix-lefthook-bats-parse";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-dev-shell-agentic.follows = "nix-dev-shell-agentic";
+    };
   };
 
   outputs =
@@ -20,6 +30,8 @@
       self,
       nixpkgs,
       nix-dev-shell-agentic,
+      nix-lefthook-bats-unit,
+      nix-lefthook-bats-parse,
       ...
     }@inputs:
     let
@@ -49,6 +61,11 @@
             inherit pkgs inputs;
             ciPackages = [
               self.packages.${system}.default
+              # Wrappers for the bats-unit / bats-parse hooks in lefthook.yml --
+              # without them those hooks fail (command not found) when a *.bats
+              # file is staged.
+              nix-lefthook-bats-unit.packages.${system}.default
+              nix-lefthook-bats-parse.packages.${system}.default
             ];
             shellHook = builtins.replaceStrings [ "@BATS_LIB_PATH@" ] [ "${shells.batsWithLibs}" ] (
               builtins.readFile ./dev.sh
