@@ -1,70 +1,62 @@
-# Flatten SPEC — nix-lefthook-yamllint
+# SPEC — nix-lefthook-yamllint
 
-## Goal
-Remove the `nix-dev-shell-agentic` flake input (and its transitive
-explosion) from `flake.nix`, preserving the `lefthook-yamllint` package
-output and keeping CI (`nix develop .#ci` + remote lefthook hooks) and bats
-green.
+## §G Goal
 
-## Before
-- flake.lock: 81 nodes.
-- Inputs: nixpkgs-lock, nixpkgs(follows), nix-dev-shell-agentic(flake),
-  nix-lefthook-bats-unit(flake), nix-lefthook-bats-parse(flake).
-- Outputs: packages.<sys>.default = lefthook-yamllint; devShells ci/default
-  via nix-dev-shell-agentic.lib.mkShells.
+Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files from its arguments and runs `yamllint` on them, exiting 0 when no YAML files match. Packaged as a Nix flake `writeShellApplication`. Opensource-safe: zero credentials, zero local paths, zero private refs.
 
-## Consumption of the agentic devShell here
-- `.envrc` = `use flake` → devShells.<sys>.default.
-- CI enters `nix develop .#ci` and runs lefthook install / pre-commit /
-  pre-push --all-files.
-- lefthook.yml `remotes:` invoke wrapper binaries that must be on PATH in the
-  ci shell: lefthook-{nixfmt,shellcheck,shfmt,statix,deadnix,
-  nix-no-embedded-shell,bats-unit,typos,trailing-whitespace,
-  missing-final-newline,git-conflict-markers,editorconfig-checker,
-  git-no-local-paths,file-size-check}; bare `bats` (bats-parse), bare
-  `nix flake check` (nix-flake-check); plus lefthook, git, coreutils,
-  parallel, yamllint.
-- bats unit tests need BATS_LIB_PATH + lefthook-yamllint on PATH.
+## §C Constraints
 
-## Changes
-### Inputs
-Remove nix-dev-shell-agentic, nix-lefthook-bats-unit(flake),
-nix-lefthook-bats-parse(flake). Add `flake = false` `-src` inputs for each
-sibling wrapper the remotes invoke (14 leaves):
-bats-unit, deadnix, editorconfig-checker, file-size-check,
-git-conflict-markers, git-no-local-paths, missing-final-newline,
-nix-no-embedded-shell, nixfmt, shellcheck, shfmt, statix,
-trailing-whitespace, typos.
-Result inputs: nixpkgs-lock, nixpkgs(follows), + 14 flake=false leaves. No
-flake input → no dep-tree explosion. (bats-parse needs only bare `bats`;
-nix-flake-check needs only bare `nix` — neither needs an -src leaf.)
+- C1: Pure bash — no Python/Ruby/etc runtime deps beyond `yamllint` itself
+- C2: Nix flake — `writeShellApplication` pkg, plain `mkShell` devShells with inline lefthook-wrapper composition
+- C3: MIT license
+- C4: Multi-platform: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`
+- C5: Detached from parent project — no credential leaks, no hardcoded local paths, no private repo refs
+- C6: All config via env vars — no config files beyond baseline lint config
+- C7: Delegates pass/fail to `yamllint` — non-zero exit when yamllint flags a file, blocking the commit
+- C8: Flattened inputs — `flake = false` `-src` leaf inputs plus `nixpkgs-lock`, no `nix-dev-shell-agentic`, no transitive flake explosion
 
-### packages (UNCHANGED logic)
-packages.<sys>.default = writeShellApplication { name="lefthook-yamllint";
-runtimeInputs=[pkgs.yamllint]; text=readFile ./lefthook-yamllint.sh; }.
+## §I Interfaces
 
-### devShells (plain mkShell, statix template shape)
-- lefthookWrappersFor helper (wrap helper; bats-unit + file-size-check get
-  special multi-input handling; nix-no-embedded-shell gets SCANNER prefix per
-  tdd-order-bats template; rest via `wrap`).
-- batsWithLibsFor helper.
-- ciCommon = [self pkg, batsWithLibs, bats, coreutils, git, lefthook, nix,
-  parallel, yamllint] ++ wrappers.
-- ci = mkShell { packages = ciCommon; BATS_LIB_PATH = "${batsWithLibs}/share/bats"; }
-- default = mkShell { packages = ciCommon; shellHook = dev.sh expanded; }
+- I.cli: `lefthook-yamllint file1.yml [file2.yml ...]` — main binary; `exec`s `yamllint` on the matching files, propagating its exit code (non-zero blocks commit); exit 0 when no args or no YAML files match
+- I.env: `LEFTHOOK_YAMLLINT_CONFIG` (path to a yamllint config; unset → yamllint auto-discovers `.yamllint`/`.yamllint.yml`/`.yamllint.yaml` from cwd; the path may live outside the repo root, e.g. a nix out-link), `LEFTHOOK_YAMLLINT_TIMEOUT` (seconds, default 30; consumed by the `timeout` wrapper in `lefthook.yml`/`lefthook-remote.yml`)
+- I.remote: `lefthook-remote.yml` — consumers add as a lefthook remote; runs on `pre-commit` over `{staged_files}` and `pre-push` over `{push_files}`, both `glob: "*.{yml,yaml}"`
+- I.flake: `packages.${system}.default` — `lefthook-yamllint` Nix pkg output, `runtimeInputs = [ pkgs.yamllint ]`
+- I.devshell: `devShells.${system}.default` + `.#ci` — dev/CI shells; both share `ciCommon` (pkg, bats-with-libs, bats, coreutils, git, lefthook, nix, parallel, yamllint, plus the inline lefthook wrappers); `.#ci` exports `BATS_LIB_PATH`, `.#default` runs the expanded `dev.sh` shellHook
+- I.ci: `.github/workflows/ci.yml` — linux + macos via `nix-lefthook-ci-action`; `.github/workflows/update-pins.yml` for input pin refresh
 
-### Side changes required to land a flattened flake green
-1. config/lefthook/file_size_limits.yml: nix 4096 → 10240 (flattened flake.nix exceeds 4096 bytes with 15 inline wrappers). Pure config.
-2. lefthook-yamllint.sh: reformat to shfmt `-i 2` if needed. Whitespace-only.
+## §V Invariants
 
-## Validation gate (all must pass)
-1. nix flake check — PASS.
-2. nix flake show — packages.<sys>.default = lefthook-yamllint; devShells ci+default. UNCHANGED set.
-3. nix build .#default + smoke.
-4. bats tests/unit/ inside nix develop .#ci — PASS.
-5. lefthook run pre-commit --all-files inside .#ci — PASS.
-6. lock nodes << 81.
+- V1: Zero args → immediate exit 0
+- V2: Only `*.yml` and `*.yaml` arguments that exist as regular files are passed to `yamllint`; non-existent paths and non-YAML extensions are filtered out silently
+- V3: After filtering, an empty file set → exit 0 (no yamllint invocation)
+- V4: `LEFTHOOK_YAMLLINT_CONFIG` set → `yamllint -c "$LEFTHOOK_YAMLLINT_CONFIG"`; unset → yamllint auto-discovery preserves prior behavior
+- V5: Invalid YAML or yamllint rule violations propagate yamllint's non-zero exit, blocking the commit
+- V6: `LEFTHOOK_YAMLLINT_CONFIG` may point outside the repo root (nix out-link) — the config need not be a committed root file
+- V7: `LEFTHOOK_YAMLLINT_TIMEOUT` (default 30s) bounds each hook invocation via `timeout`
+- V8: No credentials, secrets, tokens, API keys, or private paths in any tracked file
+- V9: No hardcoded local filesystem paths (enforced by `nix-lefthook-git-no-local-paths` hook)
+- V10: `dev.sh` sets `BATS_LIB_PATH` and auto-installs lefthook when `.git/hooks/pre-commit` is missing
+- V11: `packages.${system}.default` and `devShells` (`ci` + `default`) outputs are stable across all four supported systems
+- V12: Flattened flake — inputs are `nixpkgs-lock`, `nixpkgs` (follows), and `flake = false` `-src` leaves only; no flake input pulls a transitive dep tree
+- V13: CI runs lefthook pre-commit + pre-push on linux + macos via `nix-lefthook-ci-action`
+- V14: All linters pass: shellcheck, shfmt, nixfmt, statix, deadnix, nix-no-embedded-shell, yamllint, typos, editorconfig-checker, bats-parse, bats-unit, trailing-whitespace, missing-final-newline, git-conflict-markers, git-no-local-paths, file-size-check, nix-flake-check
+- V15: `config/lefthook/file_size_limits.yml` raises the `nix` extension limit to 10240 — the flattened `flake.nix` with inline wrappers exceeds the 4096 default
 
-## Then
-Branch flatten-drop-agentic, commit, push, DRAFT PR.
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+## §T Tasks
+
+| id | status | task | cites |
+| --- | --- | --- | --- |
+| T1 | x | core wrapper: filter `.yml`/`.yaml` regular-file args, `exec yamllint`, exit 0 on empty | V1,V2,V3,I.cli |
+| T2 | x | optional `LEFTHOOK_YAMLLINT_CONFIG` — `-c` when set, auto-discovery when unset | V4,V6,I.env |
+| T3 | x | propagate yamllint non-zero exit to block commits | V5,C7 |
+| T4 | x | Nix flake pkg (`writeShellApplication`, `runtimeInputs=[yamllint]`) | C2,I.flake |
+| T5 | x | flattened devShells (`.#default` + `.#ci`) with inline lefthook-wrapper composition | C2,C8,I.devshell,V12 |
+| T6 | x | lefthook-remote.yml + lefthook.yml: pre-commit/pre-push over yaml globs with timeout | I.remote,V7 |
+| T7 | x | dev.sh — BATS_LIB_PATH + auto-install lefthook | V10 |
+| T8 | x | unit tests: lefthook-yamllint.bats (10 tests, config + filtering + failure cases) | V1-V6 |
+| T9 | x | unit tests: dev.bats (3 tests) | V10 |
+| T10 | x | GitHub Actions CI: linux + macos via nix-lefthook-ci-action | V13,I.ci |
+| T11 | x | linter suite via lefthook remotes | V14 |
+| T12 | x | flatten flake: drop nix-dev-shell-agentic, use `flake = false` `-src` leaves | C8,V12 |
+| T13 | x | file_size_limits.yml: raise `nix` limit to 10240 for flattened flake | V15 |
+| T14 | x | opensource audit: no credentials/local-paths/private-refs in git history | V8,V9,C5 |
