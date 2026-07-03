@@ -60,3 +60,9 @@ Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files
 | T12 | x | flatten flake: drop nix-dev-shell-agentic, use `flake = false` `-src` leaves | C8,V12 |
 | T13 | x | file_size_limits.yml: raise `nix` limit to 10240 for flattened flake | V15 |
 | T14 | x | opensource audit: no credentials/local-paths/private-refs in git history | V8,V9,C5 |
+
+## §B Bugs
+
+| id | date | cause | fix |
+| --- | --- | --- | --- |
+| B1 | 2026-07-03 | `case` pattern in `lefthook-yamllint.sh` indented 4 spaces instead of 2; `shfmt` rejects it | Reduce `case` pattern indentation to 2 spaces to satisfy `shfmt` |
