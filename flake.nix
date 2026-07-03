@@ -126,12 +126,6 @@
           (wrap "lefthook-editorconfig-checker" nix-lefthook-editorconfig-checker-src {
             runtimeInputs = [ pkgs.editorconfig-checker ];
           })
-          (wrap "get-file-size-limit" nix-lefthook-file-size-check-src {
-            runtimeInputs = [
-              pkgs.gawk
-              pkgs.gnugrep
-            ];
-          })
           (pkgs.writeShellApplication {
             name = "lefthook-file-size-check";
             runtimeInputs = [

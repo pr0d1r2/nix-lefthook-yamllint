@@ -22,7 +22,7 @@ Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files
 - I.remote: `lefthook-remote.yml` — consumers add as a lefthook remote; runs on `pre-commit` over `{staged_files}` and `pre-push` over `{push_files}`, both `glob: "*.{yml,yaml}"`
 - I.flake: `packages.${system}.default` — `lefthook-yamllint` Nix pkg output, `runtimeInputs = [ pkgs.yamllint ]`
 - I.devshell: `devShells.${system}.default` + `.#ci` — dev/CI shells; both share `ciCommon` (pkg, bats-with-libs, bats, coreutils, git, lefthook, nix, parallel, yamllint, plus the inline lefthook wrappers); `.#ci` exports `BATS_LIB_PATH`, `.#default` runs the expanded `dev.sh` shellHook
-- I.ci: `.github/workflows/ci.yml` — linux + macos via `nix-lefthook-ci-action`; `.github/workflows/update-pins.yml` for input pin refresh
+- I.ci: `.github/workflows/ci.yml` — linux + macos via `nix-lefthook-ci-action`
 
 ## §V Invariants
 
@@ -60,3 +60,9 @@ Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files
 | T12 | x | flatten flake: drop nix-dev-shell-agentic, use `flake = false` `-src` leaves | C8,V12 |
 | T13 | x | file_size_limits.yml: raise `nix` limit to 10240 for flattened flake | V15 |
 | T14 | x | opensource audit: no credentials/local-paths/private-refs in git history | V8,V9,C5 |
+
+## §B Bugs
+
+| id | date | cause | fix |
+| --- | --- | --- | --- |
+| B1 | 2026-07-03 | `case` pattern in `lefthook-yamllint.sh` indented 4 spaces instead of 2; `shfmt` rejects it | Reduce `case` pattern indentation to 2 spaces to satisfy `shfmt` |
