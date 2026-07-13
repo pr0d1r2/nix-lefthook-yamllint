@@ -12,7 +12,7 @@ files=()
 for f in "$@"; do
   [ -f "$f" ] || continue
   case "$f" in
-  *.yml | *.yaml) files+=("$f") ;;
+    *.yml | *.yaml) files+=("$f") ;;
   esac
 done
 
