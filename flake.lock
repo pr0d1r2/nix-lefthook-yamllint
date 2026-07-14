@@ -96,6 +96,38 @@
         "type": "github"
       }
     },
+    "nix-lefthook-markdownlint-agentic-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783877289,
+        "narHash": "sha256-xqSVIhzpRnMKFMYwZS1TIlHMLggCN7cTeJo8kE/l2Js=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-markdownlint-agentic",
+        "rev": "a7b7bfbde6e5ccce9041e02e639e810b69f9c298",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-markdownlint-agentic",
+        "type": "github"
+      }
+    },
+    "nix-lefthook-markdownlint-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783967492,
+        "narHash": "sha256-EvKPSEIRVRYD6ngDbOSG11XfVaTn2AZzlcjaeG2snEc=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-markdownlint",
+        "rev": "6ed8ac0ffb0e39d667793fe90437d482502f4b30",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-markdownlint",
+        "type": "github"
+      }
+    },
     "nix-lefthook-missing-final-newline-src": {
       "flake": false,
       "locked": {
@@ -266,6 +298,8 @@
         "nix-lefthook-file-size-check-src": "nix-lefthook-file-size-check-src",
         "nix-lefthook-git-conflict-markers-src": "nix-lefthook-git-conflict-markers-src",
         "nix-lefthook-git-no-local-paths-src": "nix-lefthook-git-no-local-paths-src",
+        "nix-lefthook-markdownlint-agentic-src": "nix-lefthook-markdownlint-agentic-src",
+        "nix-lefthook-markdownlint-src": "nix-lefthook-markdownlint-src",
         "nix-lefthook-missing-final-newline-src": "nix-lefthook-missing-final-newline-src",
         "nix-lefthook-nix-no-embedded-shell-src": "nix-lefthook-nix-no-embedded-shell-src",
         "nix-lefthook-nixfmt-src": "nix-lefthook-nixfmt-src",
