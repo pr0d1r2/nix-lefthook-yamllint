@@ -66,3 +66,4 @@ Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files
 | id | date | cause | fix |
 | --- | --- | --- | --- |
 | B1 | 2026-07-03 | `case` pattern in `lefthook-yamllint.sh` indented 4 spaces instead of 2; `shfmt` rejects it | Reduce `case` pattern indentation to 2 spaces to satisfy `shfmt` |
+| B2 | 2026-07-14 | `lefthook.yml` invokes `lefthook-markdownlint` and `lefthook-markdownlint-agentic`, but the flake devShell provided no wrappers for them → `timeout: No such file or directory`, exit 127, CI `build-linux` fails | Add `nix-lefthook-markdownlint-src` + `nix-lefthook-markdownlint-agentic-src` flake inputs and inline `writeShellApplication` wrappers (markdownlint-cli + `is-markdown-agentic` helper, agentic config substituted) to `lefthookWrappersFor` |
