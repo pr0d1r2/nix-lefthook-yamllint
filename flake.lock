@@ -163,11 +163,11 @@
     "nix-lefthook-nixfmt-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784332388,
-        "narHash": "sha256-q2/g1Z2GRcjSVu2ESxCZ9g4ojunUoFb92gEL8Do08lI=",
+        "lastModified": 1784426933,
+        "narHash": "sha256-YnVkOJqjxlmpR9hlu5265hpN16ggf8/iRg4unvaDM1c=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-nixfmt",
-        "rev": "c86c23b7dceb3cb11d3a89d02f8d590e1ff06f43",
+        "rev": "a9c754f4b39763392c6981619a0f15685857ed8d",
         "type": "github"
       },
       "original": {
@@ -211,11 +211,11 @@
     "nix-lefthook-statix-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784332700,
-        "narHash": "sha256-flrSShY0YfIH4Zg2kZ5QKZTdjX3t0QNfDj3arj3xs/c=",
+        "lastModified": 1784426621,
+        "narHash": "sha256-9dSX55IHuwOv4ivgLzXW7a86hSFCcPDdA7AiF7fj43c=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-statix",
-        "rev": "1a4f5ec3a36e22da9ffbd1bd8a1e4993728d376c",
+        "rev": "939a8a0bf50f0f0e37519d22e4d0cbc6f6a3a1ad",
         "type": "github"
       },
       "original": {
