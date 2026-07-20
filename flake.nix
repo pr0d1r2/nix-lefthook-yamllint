@@ -54,21 +54,33 @@
         let
           mat = set-and-setting.lib.materializationFor { inherit pkgs fragments; };
           sys = pkgs.stdenv.hostPlatform.system;
+          bats = pkgs.bats.withLibraries (p: [
+            p.bats-assert
+            p.bats-support
+          ]);
+          shells = set-and-setting.lib.mkDevShells {
+            inherit pkgs;
+            basePackages = [
+              self.packages.${sys}.default
+              bats
+            ]
+            ++ mat.packages;
+            defaultShellHook = builtins.replaceStrings [ "@BATS_LIB_PATH@" ] [ "${bats}" ] (
+              builtins.readFile ./dev.sh
+            );
+            settingHook = ''
+              ${self.packages.${sys}.setting}/bin/sync-setting .
+              _assemble_out="$(mktemp -d)"
+              FRAGMENTS="${builtins.concatStringsSep " " fragments}" \
+                out="$_assemble_out" \
+                FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
+                bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
+              cp -f "$_assemble_out/lefthook.yml" lefthook.yml
+              rm -rf "$_assemble_out"
+            '';
+          };
         in
-        set-and-setting.lib.mkDevShells {
-          inherit pkgs;
-          basePackages = mat.packages;
-          settingHook = ''
-            ${self.packages.${sys}.setting}/bin/sync-setting .
-            _assemble_out="$(mktemp -d)"
-            FRAGMENTS="${builtins.concatStringsSep " " fragments}" \
-              out="$_assemble_out" \
-              FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
-              bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
-            cp -f "$_assemble_out/lefthook.yml" lefthook.yml
-            rm -rf "$_assemble_out"
-          '';
-        }
+        shells // { ci = shells.default; }
       );
 
       checks = forAllSystems (
@@ -78,6 +90,29 @@
           src = ./.;
         })
         // {
+          unit =
+            let
+              bats = pkgs.bats.withLibraries (p: [
+                p.bats-assert
+                p.bats-support
+              ]);
+            in
+            pkgs.runCommand "unit-tests"
+              {
+                nativeBuildInputs = [
+                  self.packages.${pkgs.stdenv.hostPlatform.system}.default
+                  bats
+                  pkgs.git
+                ];
+                BATS_LIB_PATH = "${bats}/share/bats";
+              }
+              ''
+                cp -r ${./.} source
+                chmod -R u+w source
+                cd source
+                bats tests/unit
+                touch "$out"
+              '';
           dep-graph = set-and-setting.lib.mkDepGraphCheck {
             inherit pkgs;
             projectRoot = ./.;
