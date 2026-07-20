@@ -18,7 +18,8 @@ Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files
 ## §I Interfaces
 
 - I.cli: `lefthook-yamllint file1.yml [file2.yml ...]` — main binary; `exec`s `yamllint` on the matching files, propagating its exit code (non-zero blocks commit); exit 0 when no args or no YAML files match
-- I.env: `LEFTHOOK_YAMLLINT_CONFIG` (path to a yamllint config; unset → yamllint auto-discovers `.yamllint`/`.yamllint.yml`/`.yamllint.yaml` from cwd; the path may live outside the repo root, e.g. a nix out-link), `LEFTHOOK_YAMLLINT_TIMEOUT` (seconds, default 30; consumed by the `timeout` wrapper in `lefthook.yml`/`lefthook-remote.yml`)
+- I.env.config: `LEFTHOOK_YAMLLINT_CONFIG` — path to a yamllint config; unset → yamllint auto-discovers `.yamllint`/`.yamllint.yml`/`.yamllint.yaml` from cwd; may live outside the repo root (nix out-link)
+- I.env.timeout: `LEFTHOOK_YAMLLINT_TIMEOUT` — seconds, default 30; consumed by the `timeout` wrapper in `lefthook.yml`/`lefthook-remote.yml`
 - I.remote: `lefthook-remote.yml` — consumers add as a lefthook remote; runs on `pre-commit` over `{staged_files}` and `pre-push` over `{push_files}`, both `glob: "*.{yml,yaml}"`
 - I.flake: `packages.${system}.default` — `lefthook-yamllint` Nix pkg output, `runtimeInputs = [ pkgs.yamllint ]`
 - I.devshell: `devShells.${system}.default` + `.#ci` — dev/CI shells; both share `ciCommon` (pkg, bats-with-libs, bats, coreutils, git, lefthook, nix, parallel, yamllint, plus the inline lefthook wrappers); `.#ci` exports `BATS_LIB_PATH`, `.#default` runs the expanded `dev.sh` shellHook
@@ -67,3 +68,5 @@ Lefthook-compatible yamllint wrapper for git hooks. Filters `.yml`/`.yaml` files
 | --- | --- | --- | --- |
 | B1 | 2026-07-03 | `case` pattern in `lefthook-yamllint.sh` indented 4 spaces instead of 2; `shfmt` rejects it | Reduce `case` pattern indentation to 2 spaces to satisfy `shfmt` |
 | B2 | 2026-07-14 | `lefthook.yml` invokes `lefthook-markdownlint` and `lefthook-markdownlint-agentic`, but the flake devShell provided no wrappers for them → `timeout: No such file or directory`, exit 127, CI `build-linux` fails | Add `nix-lefthook-markdownlint-src` + `nix-lefthook-markdownlint-agentic-src` flake inputs and inline `writeShellApplication` wrappers (markdownlint-cli + `is-markdown-agentic` helper, agentic config substituted) to `lefthookWrappersFor` |
+| B3 | 2026-07-19 | `packages` attrset in `flake.nix` contained two `default` attributes — the real package and a stale `mkShell` devShell definition left from migration; `nix flake check` errors with "attribute 'default' already defined" | Remove the stale `default = pkgs.mkShell { … }` block from `packages`; extract embedded shell from `apps.confirm` into `confirm.sh` with placeholder substitution to fix `nix-no-embedded-shell` check |
+| B4 | 2026-07-19 | `apps.confirm` `writeShellApplication` lacked materialized packages in `runtimeInputs` — `nix run .#confirm` coherence check fails because `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, `lefthook-yamllint` are not on PATH outside the devShell | Add `materializationFor` to `apps` block and append `mat.packages` to confirm's `runtimeInputs` |

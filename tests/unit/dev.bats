@@ -16,6 +16,7 @@ setup() {
 #!/usr/bin/env bash
 echo "lefthook $*" >> "$LEFTHOOK_LOG"
 SH
+    sed -i "1s|.*|#!$(command -v bash)|" "$TEST_DIR/bin/lefthook"
     chmod +x "$TEST_DIR/bin/lefthook"
 }
 
