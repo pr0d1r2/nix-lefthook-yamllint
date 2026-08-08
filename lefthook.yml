@@ -27,9 +27,19 @@ pre-commit:
 
 pre-push:
   commands:
+    gitleaks:
+      run: lefthook-gitleaks {push_files}
+    git-conflict-markers:
+      run: lefthook-git-conflict-markers {push_files}
+    git-no-local-paths:
+      run: lefthook-git-no-local-paths {push_files}
     nix-flake-check:
       glob: "*.nix"
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check
+    unicode-lint:
+      glob: "*"
+      exclude: '\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'
+      run: timeout ${LEFTHOOK_UNICODE_LINT_TIMEOUT:-30} lefthook-unicode-lint {push_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {push_files}
