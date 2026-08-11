@@ -32,5 +32,21 @@
         "yaml"
       ];
       src = ./.;
+    }
+    // {
+      devShells = builtins.mapAttrs
+        (_system: shells: shells // { ci = shells.default; })
+        (set-and-setting.lib.mkConsumerFlake {
+          inherit self nixpkgs set-and-setting;
+          fragments = [
+            "base"
+            "nix"
+            "shell"
+            "ascii"
+            "markdown"
+            "yaml"
+          ];
+          src = ./.;
+        }).devShells;
     };
 }
