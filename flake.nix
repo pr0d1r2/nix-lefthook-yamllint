@@ -35,7 +35,22 @@
     }
     // {
       devShells =
-        builtins.mapAttrs (_system: shells: shells // { ci = shells.default; })
+        builtins.mapAttrs
+          (
+            system: shells:
+            shells
+            // {
+              ci = nixpkgs.legacyPackages.${system}.mkShell {
+                inputsFrom = [ shells.default ];
+                packages = [
+                  (nixpkgs.legacyPackages.${system}.bats.withLibraries (p: [
+                    p.bats-assert
+                    p.bats-support
+                  ]))
+                ];
+              };
+            }
+          )
           (set-and-setting.lib.mkConsumerFlake {
             inherit self nixpkgs set-and-setting;
             fragments = [
