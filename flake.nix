@@ -43,6 +43,7 @@
               ci = nixpkgs.legacyPackages.${system}.mkShell {
                 inputsFrom = [ shells.default ];
                 packages = [
+                  nixpkgs.legacyPackages.${system}.nix
                   (nixpkgs.legacyPackages.${system}.bats.withLibraries (p: [
                     p.bats-assert
                     p.bats-support

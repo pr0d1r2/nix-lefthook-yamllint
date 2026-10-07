@@ -120,6 +120,7 @@
                   self.packages.${pkgs.stdenv.hostPlatform.system}.default
                   bats
                   pkgs.git
+                  pkgs.nix
                 ];
                 BATS_LIB_PATH = "${bats}/share/bats";
               }
