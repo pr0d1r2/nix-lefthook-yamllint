@@ -9,7 +9,7 @@
 <!-- no architecture diagram -->
 <!-- no development architecture diagram -->
 
-[![CI](https://github.com/pr0d1r2/nix-lefthook-yamllint/actions/workflows/ci.yml/badge.svg)](https://github.com/pr0d1r2/nix-lefthook-yamllint/actions/workflows/ci.yml)
+[![CI](https://github.com/pr0d1r2/nix-lefthook-yamllint/actions/workflows/ci.yml/badge.svg)](https://github.com/pr0d1r2/nix-lefthook-yamllint/actions/workflows/ci.yml) [![NixOS 26.05](https://img.shields.io/badge/NixOS-26.05-blue.svg)](https://nixos.org/)
 
 > This code is LLM-generated and validated through an automated integration process using [lefthook](https://github.com/evilmartians/lefthook) git hooks, [bats](https://github.com/bats-core/bats-core) unit tests, and GitHub Actions CI.
 
